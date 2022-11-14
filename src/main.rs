@@ -65,7 +65,24 @@ impl Player {
     }
 
     pub fn update(&mut self, dt: f32) {
+        //TODO: Create physics
         //TODO: Convert Movement into vector
+
+        // const MIN_WALK:    f32 = 4.453125f32;
+        // const MAX_WALK:    f32 = 93.75f32;
+        // const ACC_WALK:    f32 = 133.5975f32;
+        // const ACC_RUN:     f32 = 200.390625f32;
+        // const DEC_REL:     f32 = 182.8135f32;
+        // const DEC_SKID:    f32 = 365.625f32;
+        // const MIN_SKID:    f32 = 33.75f32;
+
+        // const STOP_FALL:   f32 = 1575f32;
+        // const WALK_FALL:   f32 = 1800f32;
+        // const RUN_FALL:    f32 = 2025f32;
+        // const STOP_FALL_A: f32 = 450f32;
+        // const WALK_FALL_A: f32 = 421.875f32;
+        // const RUN_FALL_A:  f32 = 562.5f32;
+
         //Match tuple of moving left or right
         let p_xmove: f32 = self.x_move;
         match (
@@ -100,7 +117,9 @@ impl Player {
         //Move based on direction
         self.hitbox.x += self.x_move * dt * PLAYER_SPEED;
 
-        if (p_xmove == -1f32 && self.x_move == 1f32) || (p_xmove == 1f32 && self.x_move == -1f32) {
+        if ((p_xmove == -1f32 || p_xmove == 0f32) && self.x_move == 1f32)
+            || ((p_xmove == 1f32 || p_xmove == 0f32) && self.x_move == -1f32)
+        {
             self.current_anim = PlayerAnims::SwitchingDir;
         }
 
@@ -109,7 +128,6 @@ impl Player {
     }
 
     pub fn animate(&mut self) {
-        //TODO: figure out how to check p_xmove and xmove but not frame perfect
         match &(self.current_anim) {
             PlayerAnims::Right => {
                 self.frame_min = 4f32;
