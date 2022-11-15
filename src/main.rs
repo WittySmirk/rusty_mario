@@ -7,7 +7,7 @@ struct GameSettings {
     scale: i32,
 }
 
-const SETTINGS: GameSettings = GameSettings { scale: 3 };
+const SETTINGS: GameSettings = GameSettings { scale: 2 };
 
 // Bunch of window settings
 fn window_conf() -> Conf {

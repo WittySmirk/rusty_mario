@@ -62,8 +62,8 @@ impl Player {
             current_reference_frame: Rect::new(
                 0f32,
                 0f32,
-                (13 * SETTINGS.scale) as f32,
-                (16 * SETTINGS.scale) as f32,
+                (PLAYER_SIZE.x / SETTINGS.scale as f32) * 3f32,
+                (PLAYER_SIZE.y / SETTINGS.scale as f32) * 3f32,
             ),
             frame_min: 0f32,
             frame_max: 0f32,
@@ -289,7 +289,8 @@ impl Player {
                 self.current_frame = self.frame_min;
             }
 
-            self.current_reference_frame.x = self.current_frame * PLAYER_SIZE.x;
+            self.current_reference_frame.x =
+                self.current_frame * (PLAYER_SIZE.x / SETTINGS.scale as f32) * 3f32;
             self.current_frame += 1f32;
         }
     }
