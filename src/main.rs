@@ -1,7 +1,7 @@
 use macroquad::prelude::*;
-
 mod mario;
 use mario::Player;
+
 
 struct GameSettings {
     scale: i32,
@@ -10,6 +10,7 @@ struct GameSettings {
 const SETTINGS: GameSettings = GameSettings { scale: 3 };
 
 // Bunch of window settings
+//TODO: Proper window icon
 fn window_conf() -> Conf {
     Conf {
         window_title: "Mario".to_owned(),
@@ -24,7 +25,6 @@ fn window_conf() -> Conf {
 async fn main() {
     let screen_bg: Color = Color::from_rgba(90, 147, 245, 100);
     let mut mario: Player = Player::new().await;
-
     loop {
         //Update shit
         mario.update(get_frame_time());

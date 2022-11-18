@@ -29,8 +29,9 @@ enum PlayerState {
     Walking,
     Running,
     Skidding,
-    JumpFall, // Ducking,
-              // PullingFlag
+    JumpFall,
+    // Ducking,
+    // PullingFlag
 }
 
 pub struct Player {
@@ -46,15 +47,14 @@ pub struct Player {
     velocity: Vec2,
     state: PlayerState,
     falling_accel: f32,
-    jumping: bool,
 }
 
 impl Player {
     pub async fn new() -> Self {
         return Self {
             hitbox: Rect::new(
-                screen_width() * 0.5,
-                screen_height() * 0.5,
+                0f32,
+                screen_height() - PLAYER_SIZE.y,
                 PLAYER_SIZE.x,
                 PLAYER_SIZE.y,
             ),
@@ -74,15 +74,16 @@ impl Player {
             running: false,
             velocity: Vec2::from_array([0f32, 0f32]),
             falling_accel: 0f32,
-            jumping: false,
         };
     }
 
     pub fn update(&mut self, dt: f32) {
         //TODO: Add Skidding Timer Check
-        //TODO: Fix jumping 
 
-        match (is_key_pressed(KeyCode::Left), is_key_pressed(KeyCode::Right)) {
+        match (
+            is_key_pressed(KeyCode::Left),
+            is_key_pressed(KeyCode::Right),
+        ) {
             (true, false) => {
                 self.facing = true;
             }
@@ -90,10 +91,6 @@ impl Player {
                 self.facing = false;
             }
             _ => {}
-        }
-
-        if is_key_pressed(KeyCode::Z) {
-            self.state = PlayerState::JumpFall;
         }
 
         if let PlayerState::JumpFall = self.state {
@@ -157,11 +154,10 @@ impl Player {
                     } else if is_key_down(KeyCode::Left) && !is_key_down(KeyCode::Right) {
                         self.velocity.x += DEC_SKID * dt;
                         self.state = PlayerState::Skidding;
-                        println!("Skidding");
                     } else {
                         self.velocity.x -= DEC_REL * dt;
                     }
-                } 
+                }
                 if self.facing == true {
                     if is_key_down(KeyCode::Left) && !is_key_down(KeyCode::Right) {
                         if is_key_down(KeyCode::X) {
@@ -170,11 +166,10 @@ impl Player {
                         } else {
                             self.velocity.x -= ACC_WALK * dt;
                             self.state = PlayerState::Walking;
-                        } 
+                        }
                     } else if is_key_down(KeyCode::Right) && !is_key_down(KeyCode::Left) {
                         self.velocity.x += DEC_SKID * dt;
                         self.state = PlayerState::Skidding;
-                        println!("Skidding");
                     } else {
                         self.velocity.x += DEC_REL * dt;
                     }
@@ -183,7 +178,7 @@ impl Player {
 
             self.velocity.y += self.falling_accel * dt;
 
-            if self.jumping {
+            if is_key_pressed(KeyCode::Z) {
                 if self.velocity.x.abs() < 16f32 {
                     self.velocity.y = -240f32;
                     self.falling_accel = STOP_FALL;
@@ -195,6 +190,8 @@ impl Player {
                     self.falling_accel = RUN_FALL;
                 }
                 self.state = PlayerState::JumpFall;
+
+                //Play audio
             }
         }
 
@@ -226,13 +223,18 @@ impl Player {
         self.hitbox.y += self.velocity.y * dt * (SETTINGS.scale as f32);
 
         //Fake collision to prevent going off bottom of screen
+        //TODO: Change to AABB
         if self.hitbox.y >= screen_height() - self.hitbox.h {
             self.hitbox.y = screen_height() - self.hitbox.h;
+            if let PlayerState::JumpFall = self.state {
+                self.state = PlayerState::Idle;
+            }
         }
 
         if self.hitbox.x <= 0f32 {
             self.hitbox.x = 0f32;
         }
+
     }
 
     pub fn animate(&mut self) {
