@@ -3,7 +3,7 @@ use macroquad::prelude::*;
 mod tilemap;
 mod mario;
 use mario::Player;
-use tilemap::read_map;
+use tilemap::TileMapController;
 
 
 struct GameSettings {
@@ -29,8 +29,9 @@ async fn main() {
     let screen_bg: Color = Color::from_rgba(90, 147, 245, 100);
     let mut mario: Player = Player::new().await;
     
-    let map: String = read_map("res/maps/1-1.lvl");
-    println!("{}", map);
+    let mut tilemapcontrol: TileMapController = TileMapController::new();
+    tilemapcontrol.read_map("res/maps/1-1.lvl");
+    tilemapcontrol.spawn_from_map();
 
     loop {
         //Update shit
