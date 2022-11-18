@@ -92,135 +92,139 @@ impl Player {
             }
             _ => {}
         }
-
-        if let PlayerState::JumpFall = self.state {
-            //Jumping
-            // Air physics
-
-            //Verticle Physics
-            if self.velocity.y < 0f32 && is_key_down(KeyCode::Z) {
-                if self.falling_accel == STOP_FALL {
-                    self.velocity.y -= (STOP_FALL - STOP_FALL_A) * dt;
+        
+        // Physics scope
+        {
+            if let PlayerState::JumpFall = self.state {
+                //Jumping
+                // Air physics
+    
+                //Verticle Physics
+                if self.velocity.y < 0f32 && is_key_down(KeyCode::Z) {
+                    if self.falling_accel == STOP_FALL {
+                        self.velocity.y -= (STOP_FALL - STOP_FALL_A) * dt;
+                    }
+                    if self.falling_accel == WALK_FALL {
+                        self.velocity.y -= (WALK_FALL - WALK_FALL_A) * dt;
+                    }
+                    if self.falling_accel == RUN_FALL {
+                        self.velocity.y -= (RUN_FALL - RUN_FALL_A) * dt;
+                    }
                 }
-                if self.falling_accel == WALK_FALL {
-                    self.velocity.y -= (WALK_FALL - WALK_FALL_A) * dt;
-                }
-                if self.falling_accel == RUN_FALL {
-                    self.velocity.y -= (RUN_FALL - RUN_FALL_A) * dt;
-                }
-            }
-
-            if is_key_down(KeyCode::Right) && !is_key_down(KeyCode::Left) {
-                if self.velocity.x.abs() > MAX_WALK {
-                    self.velocity.x += ACC_RUN * dt;
+    
+                if is_key_down(KeyCode::Right) && !is_key_down(KeyCode::Left) {
+                    if self.velocity.x.abs() > MAX_WALK {
+                        self.velocity.x += ACC_RUN * dt;
+                    } else {
+                        self.velocity.x += ACC_WALK * dt;
+                    }
+                } else if is_key_down(KeyCode::Left) && !is_key_down(KeyCode::Right) {
+                    if self.velocity.x.abs() > MAX_WALK {
+                        self.velocity.x -= ACC_RUN * dt;
+                    } else {
+                        self.velocity.x -= ACC_WALK * dt;
+                    }
                 } else {
-                    self.velocity.x += ACC_WALK * dt;
-                }
-            } else if is_key_down(KeyCode::Left) && !is_key_down(KeyCode::Right) {
-                if self.velocity.x.abs() > MAX_WALK {
-                    self.velocity.x -= ACC_RUN * dt;
-                } else {
-                    self.velocity.x -= ACC_WALK * dt;
+                    //Do nothing
                 }
             } else {
-                //Do nothing
-            }
-        } else {
-            // Not jumping
-            //Ground physics
-            if self.velocity.x.abs() < MIN_WALK {
-                // slower than a walk // starting, stopping or turning around
-                self.velocity.x = 0f32;
-                self.state = PlayerState::Idle;
-                if is_key_down(KeyCode::Left) {
-                    self.velocity.x -= MIN_WALK;
-                    self.state = PlayerState::Walking;
-                }
-                if is_key_down(KeyCode::Right) {
-                    self.velocity.x += MIN_WALK;
-                    self.state = PlayerState::Walking;
-                }
-            } else if self.velocity.x.abs() >= MIN_WALK {
-                //Faster than a walk // accelerating or decelarating
-                if self.facing == false {
-                    if is_key_down(KeyCode::Right) && !is_key_down(KeyCode::Left) {
-                        if is_key_down(KeyCode::X) {
-                            self.velocity.x += ACC_RUN * dt;
-                            self.state = PlayerState::Running;
+                // Not jumping
+                //Ground physics
+                if self.velocity.x.abs() < MIN_WALK {
+                    // slower than a walk // starting, stopping or turning around
+                    self.velocity.x = 0f32;
+                    self.state = PlayerState::Idle;
+                    if is_key_down(KeyCode::Left) {
+                        self.velocity.x -= MIN_WALK;
+                        self.state = PlayerState::Walking;
+                    }
+                    if is_key_down(KeyCode::Right) {
+                        self.velocity.x += MIN_WALK;
+                        self.state = PlayerState::Walking;
+                    }
+                } else if self.velocity.x.abs() >= MIN_WALK {
+                    //Faster than a walk // accelerating or decelarating
+                    if self.facing == false {
+                        if is_key_down(KeyCode::Right) && !is_key_down(KeyCode::Left) {
+                            if is_key_down(KeyCode::X) {
+                                self.velocity.x += ACC_RUN * dt;
+                                self.state = PlayerState::Running;
+                            } else {
+                                self.velocity.x += ACC_WALK * dt;
+                                self.state = PlayerState::Walking;
+                            }
+                        } else if is_key_down(KeyCode::Left) && !is_key_down(KeyCode::Right) {
+                            self.velocity.x += DEC_SKID * dt;
+                            self.state = PlayerState::Skidding;
                         } else {
-                            self.velocity.x += ACC_WALK * dt;
-                            self.state = PlayerState::Walking;
+                            self.velocity.x -= DEC_REL * dt;
                         }
-                    } else if is_key_down(KeyCode::Left) && !is_key_down(KeyCode::Right) {
-                        self.velocity.x += DEC_SKID * dt;
-                        self.state = PlayerState::Skidding;
-                    } else {
-                        self.velocity.x -= DEC_REL * dt;
+                    }
+                    if self.facing == true {
+                        if is_key_down(KeyCode::Left) && !is_key_down(KeyCode::Right) {
+                            if is_key_down(KeyCode::X) {
+                                self.velocity.x -= ACC_RUN * dt;
+                                self.state = PlayerState::Running;
+                            } else {
+                                self.velocity.x -= ACC_WALK * dt;
+                                self.state = PlayerState::Walking;
+                            }
+                        } else if is_key_down(KeyCode::Right) && !is_key_down(KeyCode::Left) {
+                            self.velocity.x += DEC_SKID * dt;
+                            self.state = PlayerState::Skidding;
+                        } else {
+                            self.velocity.x += DEC_REL * dt;
+                        }
                     }
                 }
-                if self.facing == true {
-                    if is_key_down(KeyCode::Left) && !is_key_down(KeyCode::Right) {
-                        if is_key_down(KeyCode::X) {
-                            self.velocity.x -= ACC_RUN * dt;
-                            self.state = PlayerState::Running;
-                        } else {
-                            self.velocity.x -= ACC_WALK * dt;
-                            self.state = PlayerState::Walking;
-                        }
-                    } else if is_key_down(KeyCode::Right) && !is_key_down(KeyCode::Left) {
-                        self.velocity.x += DEC_SKID * dt;
-                        self.state = PlayerState::Skidding;
+    
+                self.velocity.y += self.falling_accel * dt;
+    
+                if is_key_pressed(KeyCode::Z) {
+                    if self.velocity.x.abs() < 16f32 {
+                        self.velocity.y = -240f32;
+                        self.falling_accel = STOP_FALL;
+                    } else if self.velocity.x.abs() < 40f32 {
+                        self.velocity.y = -240f32;
+                        self.falling_accel = WALK_FALL;
                     } else {
-                        self.velocity.x += DEC_REL * dt;
+                        self.velocity.y = -300f32;
+                        self.falling_accel = RUN_FALL;
                     }
+                    self.state = PlayerState::JumpFall;
+    
+                    //Play audio
                 }
             }
-
+    
             self.velocity.y += self.falling_accel * dt;
-
-            if is_key_pressed(KeyCode::Z) {
-                if self.velocity.x.abs() < 16f32 {
-                    self.velocity.y = -240f32;
-                    self.falling_accel = STOP_FALL;
-                } else if self.velocity.x.abs() < 40f32 {
-                    self.velocity.y = -240f32;
-                    self.falling_accel = WALK_FALL;
-                } else {
-                    self.velocity.y = -300f32;
-                    self.falling_accel = RUN_FALL;
-                }
-                self.state = PlayerState::JumpFall;
-
-                //Play audio
+    
+            //Cap max speeds
+            if self.velocity.y >= MAX_FALL {
+                self.velocity.y = MAX_FALL;
             }
+            if self.velocity.y <= -MAX_FALL {
+                self.velocity.y = -MAX_FALL;
+            }
+    
+            if self.velocity.x >= MAX_RUN {
+                self.velocity.x = MAX_RUN;
+            }
+            if self.velocity.x <= -MAX_RUN {
+                self.velocity.x = -MAX_RUN;
+            }
+            if self.velocity.x >= MAX_RUN && !self.running {
+                self.velocity.x = MAX_WALK;
+            }
+            if self.velocity.x <= -MAX_RUN && !self.running {
+                self.velocity.x = -MAX_WALK;
+            }
+    
+            //Update position
+            self.hitbox.x += self.velocity.x * dt * (SETTINGS.scale as f32);
+            self.hitbox.y += self.velocity.y * dt * (SETTINGS.scale as f32);
         }
-
-        self.velocity.y += self.falling_accel * dt;
-
-        //Cap max speeds
-        if self.velocity.y >= MAX_FALL {
-            self.velocity.y = MAX_FALL;
-        }
-        if self.velocity.y <= -MAX_FALL {
-            self.velocity.y = -MAX_FALL;
-        }
-
-        if self.velocity.x >= MAX_RUN {
-            self.velocity.x = MAX_RUN;
-        }
-        if self.velocity.x <= -MAX_RUN {
-            self.velocity.x = -MAX_RUN;
-        }
-        if self.velocity.x >= MAX_RUN && !self.running {
-            self.velocity.x = MAX_WALK;
-        }
-        if self.velocity.x <= -MAX_RUN && !self.running {
-            self.velocity.x = -MAX_WALK;
-        }
-
-        //Update position
-        self.hitbox.x += self.velocity.x * dt * (SETTINGS.scale as f32);
-        self.hitbox.y += self.velocity.y * dt * (SETTINGS.scale as f32);
+        
 
         //Fake collision to prevent going off bottom of screen
         //TODO: Change to AABB
