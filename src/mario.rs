@@ -1,10 +1,10 @@
 use macroquad::prelude::*;
 
-use crate::SETTINGS;
+use crate::CONSTS;
+use crate::entity::Physics;
+use crate::entity::Render;
 
 // Constants that the Player Struct needs
-const PLAYER_SIZE: Vec2 =
-    Vec2::from_array([(13 * SETTINGS.scale) as f32, (16 * SETTINGS.scale) as f32]);
 const PLAYER_FRAME_SPEED: f32 = 8f32;
 
 const MIN_WALK: f32 = 4.453125f32;
@@ -24,6 +24,16 @@ const WALK_FALL_A: f32 = 421.875f32;
 const RUN_FALL_A: f32 = 562.5f32;
 const MAX_FALL: f32 = 270f32;
 
+//TODO break into ECS
+
+/*
+    * Physics
+    *   Collision
+    * Drawing
+    *   Animation
+*/
+
+
 enum PlayerState {
     Idle,
     Walking,
@@ -36,7 +46,6 @@ enum PlayerState {
 
 pub struct Player {
     hitbox: Rect,           // Basically our physics object that our texture projects to
-    texture_map: Texture2D, // All the sprites for mario, later will be a texture atlas for the whole game
     current_reference_frame: Rect, // Referance frame for where in the atlas the current sprite for mario is
     frame_min: f32,
     frame_max: f32,
@@ -50,20 +59,19 @@ pub struct Player {
 }
 
 impl Player {
-    pub async fn new() -> Self {
+    pub async fn new(start: Vec2) -> Self {
         return Self {
             hitbox: Rect::new(
                 0f32,
-                screen_height() - PLAYER_SIZE.y,
-                PLAYER_SIZE.x,
-                PLAYER_SIZE.y,
+                screen_height() - CONSTS.mario_size.y,
+                CONSTS.mario_size.x,
+                CONSTS.mario_size.y,
             ),
-            texture_map: load_texture("res/mario_sprites.png").await.unwrap(),
             current_reference_frame: Rect::new(
-                0f32,
-                0f32,
-                (PLAYER_SIZE.x / SETTINGS.scale as f32) * 3f32,
-                (PLAYER_SIZE.y / SETTINGS.scale as f32) * 3f32,
+                start.x,
+                start.y,
+                (CONSTS.mario_size.x / CONSTS.settings.scale as f32) * 3f32,
+                (CONSTS.mario_size.y / CONSTS.settings.scale as f32) * 3f32,
             ),
             frame_min: 0f32,
             frame_max: 0f32,
@@ -76,8 +84,10 @@ impl Player {
             falling_accel: 0f32,
         };
     }
+}
 
-    pub fn update(&mut self, dt: f32) {
+impl Physics for Player {
+    fn update(&mut self, dt: f32) {
         //TODO: Add Skidding Timer Check
 
         match (
@@ -221,8 +231,8 @@ impl Player {
             }
     
             //Update position
-            self.hitbox.x += self.velocity.x * dt * (SETTINGS.scale as f32);
-            self.hitbox.y += self.velocity.y * dt * (SETTINGS.scale as f32);
+            self.hitbox.x += self.velocity.x * dt * (CONSTS.settings.scale as f32);
+            self.hitbox.y += self.velocity.y * dt * (CONSTS.settings.scale as f32);
         }
         
 
@@ -240,8 +250,10 @@ impl Player {
         }
 
     }
+}
 
-    pub fn animate(&mut self) {
+impl Render for Player {
+    fn animate(&mut self) {
         match &(self.state) {
             PlayerState::Walking | PlayerState::Running => {
                 self.frame_min = 4f32;
@@ -274,19 +286,19 @@ impl Player {
             }
 
             self.current_reference_frame.x =
-                self.current_frame * (PLAYER_SIZE.x / SETTINGS.scale as f32) * 3f32;
+                self.current_frame * (CONSTS.mario_size.x / CONSTS.settings.scale as f32) * 3f32;
             self.current_frame += 1f32;
         }
     }
 
-    pub fn draw(&self) {
+    fn draw(&self, texture: Texture2D) {
         draw_texture_ex(
-            self.texture_map,
+            texture,
             self.hitbox.x,
             self.hitbox.y,
             WHITE,
             DrawTextureParams {
-                dest_size: Some(PLAYER_SIZE),
+                dest_size: Some(CONSTS.mario_size),
                 source: Some(self.current_reference_frame),
                 flip_x: self.facing,
                 ..Default::default()

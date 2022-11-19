@@ -6,31 +6,27 @@ pub struct TileMapController {
     map: Map,
 }
 
-enum Entities {
-    Mario,
-    Goomba,
-    Koopa,
-    Brick,
-    Question,
-    Pipe,
-    Flag,
-    Coin,
-    Empty,
-}
+// enum Entities {
+//     Mario,
+//     Goomba,
+//     Koopa,
+//     Brick,
+//     Question,
+//     Pipe,
+//     Flag,
+//     Coin,
+//     Empty,
+// }
 
 impl TileMapController {
     pub fn new() -> Self {
-        Self {
-            map: Vec::new(),
-        }
+        Self { map: Vec::new() }
     }
 
     pub fn read_map(&mut self, path: &str) {
+        //TODO Layers
         let map = fs::read_to_string(path).expect("Unable to read file");
-        let map: Map = map
-            .lines()
-            .map(|line| line.chars().collect())
-            .collect();
+        let map: Map = map.lines().map(|line| line.chars().collect()).collect();
         self.map = map;
     }
 
@@ -75,6 +71,11 @@ impl TileMapController {
                         //Spawn Empty
                         println!("Spawn Empty");
                     }
+                    '_' => {
+                        //Fill Rest of row with Blocks
+                        println!("Fill rest of row with blocks");
+                    }
+                    ' ' => {}
                     _ => {
                         //Spawn Empty
                         println!("Spawn Empty");
