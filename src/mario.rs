@@ -1,8 +1,8 @@
 use macroquad::prelude::*;
 
+use crate::entity::Entity;
+use crate::entity::EntityType;
 use crate::CONSTS;
-use crate::entity::Physics;
-use crate::entity::Render;
 
 // Constants that the Player Struct needs
 const PLAYER_FRAME_SPEED: f32 = 8f32;
@@ -24,15 +24,12 @@ const WALK_FALL_A: f32 = 421.875f32;
 const RUN_FALL_A: f32 = 562.5f32;
 const MAX_FALL: f32 = 270f32;
 
-//TODO break into ECS
-
 /*
-    * Physics
-    *   Collision
-    * Drawing
-    *   Animation
+ * Physics
+ *   Collision
+ * Drawing
+ *   Animation
 */
-
 
 enum PlayerState {
     Idle,
@@ -45,7 +42,7 @@ enum PlayerState {
 }
 
 pub struct Player {
-    hitbox: Rect,           // Basically our physics object that our texture projects to
+    hitbox: Rect, // Basically our physics object that our texture projects to
     current_reference_frame: Rect, // Referance frame for where in the atlas the current sprite for mario is
     frame_min: f32,
     frame_max: f32,
@@ -58,18 +55,14 @@ pub struct Player {
     falling_accel: f32,
 }
 
-impl Player {
-    pub async fn new(start: Vec2) -> Self {
+
+impl Entity for Player {
+    fn new(x: f32, y: f32, e_type: EntityType, /*start: Option<Vec2>*/) -> Self {
         return Self {
-            hitbox: Rect::new(
-                0f32,
-                screen_height() - CONSTS.mario_size.y,
-                CONSTS.mario_size.x,
-                CONSTS.mario_size.y,
-            ),
+            hitbox: Rect::new(x, y, CONSTS.mario_size.x, CONSTS.mario_size.y),
             current_reference_frame: Rect::new(
-                start.x,
-                start.y,
+                e_type.get_start().x,
+                e_type.get_start().y,
                 (CONSTS.mario_size.x / CONSTS.settings.scale as f32) * 3f32,
                 (CONSTS.mario_size.y / CONSTS.settings.scale as f32) * 3f32,
             ),
@@ -84,9 +77,6 @@ impl Player {
             falling_accel: 0f32,
         };
     }
-}
-
-impl Physics for Player {
     fn update(&mut self, dt: f32) {
         //TODO: Add Skidding Timer Check
 
@@ -102,13 +92,13 @@ impl Physics for Player {
             }
             _ => {}
         }
-        
+
         // Physics scope
         {
             if let PlayerState::JumpFall = self.state {
                 //Jumping
                 // Air physics
-    
+
                 //Verticle Physics
                 if self.velocity.y < 0f32 && is_key_down(KeyCode::Z) {
                     if self.falling_accel == STOP_FALL {
@@ -121,7 +111,7 @@ impl Physics for Player {
                         self.velocity.y -= (RUN_FALL - RUN_FALL_A) * dt;
                     }
                 }
-    
+
                 if is_key_down(KeyCode::Right) && !is_key_down(KeyCode::Left) {
                     if self.velocity.x.abs() > MAX_WALK {
                         self.velocity.x += ACC_RUN * dt;
@@ -187,9 +177,9 @@ impl Physics for Player {
                         }
                     }
                 }
-    
+
                 self.velocity.y += self.falling_accel * dt;
-    
+
                 if is_key_pressed(KeyCode::Z) {
                     if self.velocity.x.abs() < 16f32 {
                         self.velocity.y = -240f32;
@@ -202,13 +192,13 @@ impl Physics for Player {
                         self.falling_accel = RUN_FALL;
                     }
                     self.state = PlayerState::JumpFall;
-    
+
                     //Play audio
                 }
             }
-    
+
             self.velocity.y += self.falling_accel * dt;
-    
+
             //Cap max speeds
             if self.velocity.y >= MAX_FALL {
                 self.velocity.y = MAX_FALL;
@@ -216,7 +206,7 @@ impl Physics for Player {
             if self.velocity.y <= -MAX_FALL {
                 self.velocity.y = -MAX_FALL;
             }
-    
+
             if self.velocity.x >= MAX_RUN {
                 self.velocity.x = MAX_RUN;
             }
@@ -229,12 +219,11 @@ impl Physics for Player {
             if self.velocity.x <= -MAX_RUN && !self.running {
                 self.velocity.x = -MAX_WALK;
             }
-    
+
             //Update position
             self.hitbox.x += self.velocity.x * dt * (CONSTS.settings.scale as f32);
             self.hitbox.y += self.velocity.y * dt * (CONSTS.settings.scale as f32);
         }
-        
 
         //Fake collision to prevent going off bottom of screen
         //TODO: Change to AABB
@@ -248,11 +237,7 @@ impl Physics for Player {
         if self.hitbox.x <= 0f32 {
             self.hitbox.x = 0f32;
         }
-
     }
-}
-
-impl Render for Player {
     fn animate(&mut self) {
         match &(self.state) {
             PlayerState::Walking | PlayerState::Running => {
