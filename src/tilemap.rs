@@ -85,6 +85,7 @@ impl TileMapController {
                     '_' => {
                         //Fill Rest of row with Blocks
                         println!("Fill rest of row with blocks");
+                        entities.push(Box::new(Block::new(j as f32 * CONSTS.block_size as f32, i as f32 * CONSTS.block_size as f32, EntityType::Ground)));
                     }
                     ' ' => {}
                     _ => {

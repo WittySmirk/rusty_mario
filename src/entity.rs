@@ -4,6 +4,7 @@ pub enum EntityType {
     Mario,
     // Goomba,
     // Koopa,
+    Ground,
     Brick,
     // Coin,
     // Flag,

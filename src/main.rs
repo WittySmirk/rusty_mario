@@ -50,9 +50,6 @@ async fn main() {
     //Create vector of entities
     let mut entities: Vec<Box<dyn Entity>> = Vec::new();  
 
-    // let mut mario: Player = Player::new(0f32, screen_height() - CONSTS.mario_size.y, entity::EntityType::Mario, /*Some(entity::EntityType::Mario.get_start()*/);
-
-
     let mut tilemapcontrol: TileMapController = TileMapController::new();
     tilemapcontrol.read_map("res/maps/1-1.lvl");
     tilemapcontrol.spawn_from_map(&mut entities);
