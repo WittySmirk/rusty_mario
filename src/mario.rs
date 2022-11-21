@@ -260,13 +260,16 @@ impl EntityT for Player {
                                 match self.hitbox.y > hitbox.y {
                                     true => {
                                         self.hitbox.y = hitbox.y - self.hitbox.h;
+                                        if let PlayerState::JumpFall = self.state {
+                                            self.state = PlayerState::Idle;
+                                        }
                                         self.velocity.y = 0f32;
                                         self.falling_accel = 0f32;
                                     }
                                     false => {
-                                        self.hitbox.y = hitbox.y + hitbox.h;
-                                        self.velocity.y = 0f32;
-                                        self.falling_accel = 0f32;
+                                        // self.hitbox.y = hitbox.y + hitbox.h;
+                                        // self.velocity.y = 0f32;
+                                        // self.falling_accel = 0f32;
                                     }
                                 }
                             }

@@ -53,15 +53,12 @@ impl TileMapController {
                     }
                     'G' => {
                         //Spawn Goomba
-                        println!("Spawn Goomba");
                     }
                     'K' => {
                         //Spawn Koopa
-                        println!("Spawn Koopa");
                     }
                     'B' => {
                         //Spawn Brick
-                        println!("Spawn Brick");
                         let n_brick: Block = Block::new(j as f32 * CONSTS.block_size as f32, i as f32 * CONSTS.block_size as f32, EntityType::Brick);
                         let hitbox: Rect = n_brick.hitbox();
                         entities.push(Entity::new(Box::new(n_brick), Some(hitbox), EntityType::Brick));

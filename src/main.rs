@@ -56,6 +56,7 @@ async fn main() {
     loop {
         // Update all entities
         for i in 0..entities.len() {
+            // Only mario has collision so check if him and do collision
             if let EntityType::Mario = entities[i].e_type {
                 for j in 0..entities.len() {
                     let other_hit: Option<Rect> = entities[j].hitbox;
