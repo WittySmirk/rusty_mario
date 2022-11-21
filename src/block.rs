@@ -1,4 +1,4 @@
-use crate::entity::{Entity, EntityType};
+use crate::entity::{EntityT, EntityType};
 use crate::CONSTS;
 use macroquad::prelude::*;
 
@@ -7,7 +7,13 @@ pub struct Block {
     reference_frame: Rect,
 }
 
-impl Entity for Block {
+impl Block {
+    pub fn hitbox(&self) -> Rect {
+        self.hitbox
+    }
+}
+
+impl EntityT for Block {
     fn new(x: f32, y: f32, e_type: EntityType) -> Self {
         Self {
             hitbox: Rect::new(x, y, CONSTS.block_size as f32, CONSTS.block_size as f32),

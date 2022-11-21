@@ -1,5 +1,7 @@
 use macroquad::prelude::*;
 
+use crate::Map;
+
 pub enum EntityType {
     Mario,
     // Goomba,
@@ -10,24 +12,30 @@ pub enum EntityType {
     // Flag,
 }
 
-//TODO figure out how to break systems into optional subtraits instead of having them all be defaults
-
-// Systems that are inherinted by different entities 
-pub trait Entity {
-    fn new(x: f32, y: f32, e_type: EntityType) -> Self where Self: Sized;
-    fn update(&mut self, _delta_time: f32) {}
-    fn collision(&mut self) {} 
-    fn draw(&self, _texture: Texture2D) {} 
-    fn animate(&mut self) {} 
+pub struct Entity {
+    pub entity: Box<dyn EntityT>,
+    pub e_type: EntityType,
+    pub hitbox: Option<Rect>,
 }
 
-// Trait of physics application
-// pub trait Physics: Entity {
-//     fn update(&mut self, delta_time: f32); // Required for physics
-//     fn collision(&mut self) {} // Optional for physics
-// }
+impl Entity {
+    pub fn new(entity: Box<dyn EntityT>, hitbox: Option<Rect>, e_type: EntityType) -> Self {
+        Self {
+            entity,
+            hitbox,
+            e_type,
+        }
+    }
+}
 
-// pub trait Render: Entity {
-//     fn draw(&self, texture: Texture2D); // Required for rendering
-//     fn animate(&mut self) {} // Optional for rendering
-// }
+// Systems that are inherinted by different entities
+pub trait EntityT {
+    //Systems
+    fn new(x: f32, y: f32, e_type: EntityType) -> Self
+    where
+        Self: Sized;
+    fn collision(&mut self, other: &Option<Rect>) {}
+    fn update(&mut self, _delta_time: f32) {}
+    fn draw(&self, _texture: Texture2D) {}
+    fn animate(&mut self) {}
+}

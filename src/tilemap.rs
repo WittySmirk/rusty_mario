@@ -1,14 +1,16 @@
 use std::fs;
 
-use crate::entity::{EntityType, Entity};
-use crate::CONSTS;
+use macroquad::prelude::Rect;
+
+use crate::entity::{EntityType, Entity, EntityT};
+use crate::{CONSTS, Map};
 use crate::mario::Player;
 use crate::block::Block;
 
-type Map = Vec<Vec<char>>;
+type MapF = Vec<Vec<char>>;
 
 pub struct TileMapController {
-    map: Map,
+    map: MapF,
 }
 
 impl TileMapController {
@@ -19,7 +21,7 @@ impl TileMapController {
     //Parse file into 2d vector of chars and exclude spaces
     pub fn read_map(&mut self, file_name: &str) {
         let file = fs::read_to_string(file_name).expect("Unable to read file");
-        let mut map: Map = Vec::new();
+        let mut map: MapF = Vec::new();
         for line in file.lines() {
             let mut row: Vec<char> = Vec::new();
             for c in line.chars() {
@@ -32,14 +34,8 @@ impl TileMapController {
         self.map = map;
     }
     
-    // pub fn read_map(&mut self, path: &str) {
-    //     //TODO Layers
-    //     let map = fs::read_to_string(path).expect("Unable to read file");
-    //     let map: Map = map.lines().map(|line| line.chars().collect()).collect();
-    //     self.map = map;
-    // }
-
-    pub fn spawn_from_map(&self, entities: &mut Vec<Box<dyn Entity>>) {
+    pub async fn spawn_from_map(&self) -> Map {
+        let mut entities: Map = Vec::new();
         //Parse map and spawn objects
         for i in 0..self.map.len() {
             for j in 0..self.map[i].len() {
@@ -47,7 +43,13 @@ impl TileMapController {
                     'M' => {
                         //Spawn Mario
                         println!("Spawn Mario");
-                        entities.push(Box::new(Player::new(j as f32 * CONSTS.block_size as f32, i as f32 * CONSTS.block_size as f32, EntityType::Mario)));
+                        let n_mario: Player = Player::new(
+                            j as f32 * CONSTS.block_size as f32,
+                            i as f32 * CONSTS.block_size as f32,
+                            EntityType::Mario,
+                        );
+
+                        entities.push(Entity::new(Box::new(n_mario), None, EntityType::Mario));
                     }
                     'G' => {
                         //Spawn Goomba
@@ -60,40 +62,46 @@ impl TileMapController {
                     'B' => {
                         //Spawn Brick
                         println!("Spawn Brick");
-                        entities.push(Box::new(Block::new(j as f32 * CONSTS.block_size as f32, i as f32 * CONSTS.block_size as f32, EntityType::Brick)));
+                        let n_brick: Block = Block::new(j as f32 * CONSTS.block_size as f32, i as f32 * CONSTS.block_size as f32, EntityType::Brick);
+                        let hitbox: Rect = n_brick.hitbox();
+                        entities.push(Entity::new(Box::new(n_brick), Some(hitbox), EntityType::Brick));
                     }
                     'Q' => {
                         //Spawn Question
-                        println!("Spawn Question");
+                        // println!("Spawn Question");
                     }
                     'P' => {
                         //Spawn Pipe
-                        println!("Spawn Pipe");
+                        // println!("Spawn Pipe");
                     }
                     'F' => {
                         //Spawn Flag
-                        println!("Spawn Flag");
+                        // println!("Spawn Flag");
                     }
                     'C' => {
                         //Spawn Coin
-                        println!("Spawn Coin");
+                        // println!("Spawn Coin");
                     }
                     'E' => {
                         //Spawn Empty
-                        println!("Spawn Empty");
+                        // println!("Spawn Empty");
                     }
                     '_' => {
                         //Fill Rest of row with Blocks
-                        println!("Fill rest of row with blocks");
-                        entities.push(Box::new(Block::new(j as f32 * CONSTS.block_size as f32, i as f32 * CONSTS.block_size as f32, EntityType::Ground)));
+                        // println!("Fill rest of row with blocks");
+                        let n_ground: Block = Block::new(j as f32 * CONSTS.block_size as f32, i as f32 * CONSTS.block_size as f32, EntityType::Ground);
+                        let hitbox: Rect = n_ground.hitbox();
+                        entities.push(Entity::new(Box::new(n_ground), Some(hitbox), EntityType::Ground));
                     }
                     ' ' => {}
                     _ => {
                         //Spawn Empty
-                        println!("Spawn Empty");
+                        // println!("Spawn Empty");
                     }
                 }
             }
         }
+
+        return entities;
     }
 }

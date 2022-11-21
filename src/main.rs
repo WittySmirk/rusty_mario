@@ -5,10 +5,12 @@ mod entity;
 mod mario;
 mod block;
 mod texture_manager;
+use mario::Player;
 use tilemap::TileMapController;
-use entity::Entity;
+use entity::{Entity, EntityType, EntityT};
 // use mario::Player;
 
+type Map = Vec<Entity>;
 
 struct GameSettings {
     scale: i32,
@@ -37,37 +39,38 @@ fn window_conf() -> Conf {
         window_height: 240 * CONSTS.settings.scale,
         window_resizable: false, // Disable this once we figure out how to do scaling based on resize       
         ..Default::default()
-    }
+    }   
 }
-
-//TODO: Create Vector of entities
 
 #[macroquad::main(window_conf)]
 async fn main() {
     let texture_atlas: Texture2D = load_texture("res/mario_sprites.png").await.unwrap();
     let screen_bg: Color = Color::from_rgba(90, 147, 245, 100);
     
-    //Create vector of entities
-    let mut entities: Vec<Box<dyn Entity>> = Vec::new();  
-
     let mut tilemapcontrol: TileMapController = TileMapController::new();
     tilemapcontrol.read_map("res/maps/1-1.lvl");
-    tilemapcontrol.spawn_from_map(&mut entities);
+    let mut entities: Map = tilemapcontrol.spawn_from_map().await;
+    
+    //TODO: Fix mario blinking lol
 
     loop {
         // Update all entities
-        for entity in entities.iter_mut() {
-            //Update physics
-            entity.update(get_frame_time());
-            entity.animate();
+        for i in 0..entities.len() {
+            if let EntityType::Mario = entities[i].e_type {
+                for j in 0..entities.len() {
+                    let other_hit: Option<Rect> = entities[j].hitbox;
+                    entities[i].entity.collision(&other_hit);
+                }
+            }
+            entities[i].entity.update(get_frame_time());
+            entities[i].entity.animate();
         }
 
         clear_background(screen_bg);
 
-
         // Draw shit
         for entity in entities.iter_mut() {
-            entity.draw(texture_atlas);
+            entity.entity.draw(texture_atlas);
         }
 
         next_frame().await;
