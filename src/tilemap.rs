@@ -1,9 +1,9 @@
 use std::fs;
 
-use macroquad::prelude::Rect;
+use macroquad::prelude::*;
 
 use crate::entity::{EntityType, Entity, EntityT};
-use crate::{CONSTS, Map};
+use crate::{CONSTS, World};
 use crate::mario::Player;
 use crate::block::Block;
 
@@ -34,9 +34,9 @@ impl TileMapController {
         self.map = map;
     }
     
-    pub async fn spawn_from_map(&self) -> Map {
-        let mut entities: Map = Vec::new();
-        //Parse map and spawn objects
+    pub async fn spawn_from_map(&self) -> World {
+        let mut world: World = Vec::new();
+       
         for i in 0..self.map.len() {
             for j in 0..self.map[i].len() {
                 match self.map[i][j] {
@@ -49,7 +49,9 @@ impl TileMapController {
                             EntityType::Mario,
                         );
 
-                        entities.push(Entity::new(Box::new(n_mario), None, EntityType::Mario));
+                        let hitbox: Rect = n_mario.hitbox();
+
+                        world.push(Entity::new(Box::new(n_mario), Some(hitbox), EntityType::Mario));
                     }
                     'G' => {
                         //Spawn Goomba
@@ -61,7 +63,7 @@ impl TileMapController {
                         //Spawn Brick
                         let n_brick: Block = Block::new(j as f32 * CONSTS.block_size as f32, i as f32 * CONSTS.block_size as f32, EntityType::Brick);
                         let hitbox: Rect = n_brick.hitbox();
-                        entities.push(Entity::new(Box::new(n_brick), Some(hitbox), EntityType::Brick));
+                        world.push(Entity::new(Box::new(n_brick), Some(hitbox), EntityType::Brick));
                     }
                     'Q' => {
                         //Spawn Question
@@ -88,7 +90,7 @@ impl TileMapController {
                         // println!("Fill rest of row with blocks");
                         let n_ground: Block = Block::new(j as f32 * CONSTS.block_size as f32, i as f32 * CONSTS.block_size as f32, EntityType::Ground);
                         let hitbox: Rect = n_ground.hitbox();
-                        entities.push(Entity::new(Box::new(n_ground), Some(hitbox), EntityType::Ground));
+                        world.push(Entity::new(Box::new(n_ground), Some(hitbox), EntityType::Ground));
                     }
                     ' ' => {}
                     _ => {
@@ -98,7 +100,6 @@ impl TileMapController {
                 }
             }
         }
-
-        return entities;
+        return world;
     }
 }

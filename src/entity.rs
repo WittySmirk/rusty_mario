@@ -1,7 +1,5 @@
 use macroquad::prelude::*;
 
-use crate::Map;
-
 pub enum EntityType {
     Mario,
     // Goomba,
@@ -34,8 +32,8 @@ pub trait EntityT {
     fn new(x: f32, y: f32, e_type: EntityType) -> Self
     where
         Self: Sized;
-    fn collision(&mut self, other: &Option<Rect>) {}
-    fn update(&mut self, _delta_time: f32) {}
+    fn collision(&mut self, _other: &Option<Rect>) {}
+    fn update(&mut self, _delta_time: f32, _camera: Option<&mut Camera2D>) {}
     fn draw(&self, _texture: Texture2D) {}
     fn animate(&mut self) {}
 }

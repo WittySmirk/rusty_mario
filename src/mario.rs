@@ -1,6 +1,5 @@
 use macroquad::prelude::*;
 
-use crate::Map;
 use crate::entity::EntityT;
 use crate::entity::EntityType;
 use crate::CONSTS;
@@ -64,6 +63,11 @@ pub struct Player {
     falling_accel: f32,
 }
 
+impl Player {
+    pub fn hitbox(&self) -> Rect {
+        self.hitbox
+    }
+}
 
 impl EntityT for Player {
     fn new(x: f32, y: f32, e_type: EntityType) -> Self {
@@ -87,7 +91,7 @@ impl EntityT for Player {
         };
     }
 
-    fn update(&mut self, dt: f32) {
+    fn update(&mut self, dt: f32, camera:Option<&mut Camera2D>) {
         //TODO: Add Skidding Timer Check
 
         match (
@@ -247,6 +251,11 @@ impl EntityT for Player {
         if self.hitbox.x <= 0f32 {
             self.hitbox.x = 0f32;
         }
+
+        //TODO: make it so that the player can't go back
+        if self.hitbox.x >= screen_width() / 2f32 {
+            camera.expect("Camera not found").target.x  = self.hitbox.x;
+        }
     }
 
     //AABB check against all entities
@@ -259,10 +268,10 @@ impl EntityT for Player {
                             true => {
                                 match self.hitbox.y > hitbox.y {
                                     true => {
-                                        self.hitbox.y = hitbox.y - self.hitbox.h;
                                         if let PlayerState::JumpFall = self.state {
                                             self.state = PlayerState::Idle;
                                         }
+                                        self.hitbox.y = hitbox.y - self.hitbox.h;
                                         self.velocity.y = 0f32;
                                         self.falling_accel = 0f32;
                                     }

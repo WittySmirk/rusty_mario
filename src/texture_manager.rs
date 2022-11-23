@@ -1,4 +1,4 @@
-use crate::{CONSTS, Map};
+use crate::{CONSTS};
 use macroquad::prelude::*;
 use crate::entity::EntityType;
 
