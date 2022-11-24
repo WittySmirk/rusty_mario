@@ -6,6 +6,7 @@ pub enum EntityType {
     // Koopa,
     Ground,
     Brick,
+    Question,
     // Coin,
     // Flag,
 }
@@ -29,7 +30,7 @@ impl Entity {
 // Systems that are inherinted by different entities
 pub trait EntityT {
     //Systems
-    fn new(x: f32, y: f32, e_type: EntityType) -> Self
+    fn new(x: f32, y: f32, e_type: EntityType, spawns: Option<EntityType>) -> Self
     where
         Self: Sized;
     fn collision(&mut self, _other: &Option<Rect>) {}

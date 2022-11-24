@@ -14,7 +14,7 @@ impl Block {
 }
 
 impl EntityT for Block {
-    fn new(x: f32, y: f32, e_type: EntityType) -> Self {
+    fn new(x: f32, y: f32, e_type: EntityType, spawns: Option<EntityType>) -> Self {
         Self {
             hitbox: Rect::new(x, y, CONSTS.block_size as f32, CONSTS.block_size as f32),
             reference_frame: Rect::new(

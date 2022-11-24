@@ -5,13 +5,13 @@ mod entity;
 mod mario;
 mod texture_manager;
 mod tilemap;
+mod question;
 use entity::{Entity, EntityType};
 use tilemap::TileMapController;
-// use mario::Player;
+
 
 pub type World = Vec<Entity>;
 
-//TODO: Make camera follow player
 struct GameSettings {
     scale: i32,
 }
@@ -50,7 +50,8 @@ async fn main() {
     let mut tilemapcontrol: TileMapController = TileMapController::new();
     tilemapcontrol.read_map("res/maps/1-1.lvl");
     let mut world: World = tilemapcontrol.spawn_from_map().await;
-    let mut camera: Camera2D = Camera2D::from_display_rect(Rect::new(0.0, 0.0, screen_width(), screen_height()));
+    let mut camera: Camera2D =
+        Camera2D::from_display_rect(Rect::new(0.0, 0.0, screen_width(), screen_height()));
     //TODO: Fix mario blinking lol
 
     loop {
@@ -60,7 +61,7 @@ async fn main() {
             if let EntityType::Mario = world[i].e_type {
                 // Set mario to be the camera target every frame
                 // if world[i].hitbox.expect("player should have hitbox").x > screen_width() / 2.0 {
-                    // println!("Updating camera position");
+                // println!("Updating camera position");
                 // }
 
                 world[i].entity.update(get_frame_time(), Some(&mut camera));
@@ -75,7 +76,6 @@ async fn main() {
         clear_background(screen_bg);
 
         // Draw shit
-        println!("{}, {}", camera.target.x, camera.target.y);
         set_camera(&camera);
         for entity in world.iter_mut() {
             entity.entity.draw(texture_atlas);

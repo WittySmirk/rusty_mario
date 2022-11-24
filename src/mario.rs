@@ -24,21 +24,6 @@ const WALK_FALL_A: f32 = 421.875f32;
 const RUN_FALL_A: f32 = 562.5f32;
 const MAX_FALL: f32 = 270f32;
 
-/*
-
-    Collision: if the player is colliding with a block, then the player will be moved to the top of the block
-
-
-*/
-
-// fn collision (&mut self, blocks: &mut Vec<Box<dyn Entity>>) {
-//     for block in blocks.iter_mut() {
-//         if block.get_hitbox().overlaps(self.hitbox) {
-//             self.hitbox.y = block.get_hitbox().y - self.hitbox.height;
-//         }
-//     }
-// }
-
 enum PlayerState {
     Idle,
     Walking,
@@ -70,7 +55,7 @@ impl Player {
 }
 
 impl EntityT for Player {
-    fn new(x: f32, y: f32, e_type: EntityType) -> Self {
+    fn new(x: f32, y: f32, e_type: EntityType, spawns: Option<EntityType>) -> Self {
         return Self {
             hitbox: Rect::new(x, y, CONSTS.mario_size.x, CONSTS.mario_size.y),
             current_reference_frame: Rect::new(
@@ -91,7 +76,7 @@ impl EntityT for Player {
         };
     }
 
-    fn update(&mut self, dt: f32, camera:Option<&mut Camera2D>) {
+    fn update(&mut self, dt: f32, camera: Option<&mut Camera2D>) {
         //TODO: Add Skidding Timer Check
 
         match (
@@ -240,13 +225,12 @@ impl EntityT for Player {
         }
 
         //Fake collision to prevent going off bottom of screen
-        //TODO: Change to AABB
-        if self.hitbox.y >= screen_height() - self.hitbox.h {
-            self.hitbox.y = screen_height() - self.hitbox.h;
-            if let PlayerState::JumpFall = self.state {
-                self.state = PlayerState::Idle;
-            }
-        }
+        // if self.hitbox.y >= screen_height() - self.hitbox.h {
+        //     self.hitbox.y = screen_height() - self.hitbox.h;
+        //     if let PlayerState::JumpFall = self.state {
+        //         self.state = PlayerState::Idle;
+        //     }
+        // }
 
         if self.hitbox.x <= 0f32 {
             self.hitbox.x = 0f32;
@@ -254,40 +238,40 @@ impl EntityT for Player {
 
         //TODO: make it so that the player can't go back
         if self.hitbox.x >= screen_width() / 2f32 {
-            camera.expect("Camera not found").target.x  = self.hitbox.x;
+            camera.expect("Camera not found").target.x = self.hitbox.x;
         }
     }
 
     //AABB check against all entities
     fn collision(&mut self, other: &Option<Rect>) {
-            //Check if player is colliding with entity
-            match other {
-                Some(hitbox) => {
-                    if let Some(intersection) = self.hitbox.intersect(*hitbox) {
-                        match intersection.w > intersection.h {
-                            true => {
-                                match self.hitbox.y > hitbox.y {
-                                    true => {
-                                        if let PlayerState::JumpFall = self.state {
-                                            self.state = PlayerState::Idle;
-                                        }
-                                        self.hitbox.y = hitbox.y - self.hitbox.h;
-                                        self.velocity.y = 0f32;
-                                        self.falling_accel = 0f32;
+        //Check if player is colliding with entity
+        match other {
+            Some(hitbox) => {
+                if let Some(intersection) = self.hitbox.intersect(*hitbox) {
+                    match intersection.w > intersection.h {
+                        true => {
+                            match self.hitbox.y > hitbox.y {
+                                true => {
+                                    if let PlayerState::JumpFall = self.state {
+                                        self.state = PlayerState::Idle;
                                     }
-                                    false => {
-                                        // self.hitbox.y = hitbox.y + hitbox.h;
-                                        // self.velocity.y = 0f32;
-                                        // self.falling_accel = 0f32;
-                                    }
+                                    self.hitbox.y = hitbox.y - self.hitbox.h;
+                                    self.velocity.y = 0f32;
+                                    self.falling_accel = 0f32;
+                                }
+                                false => {
+                                    // self.hitbox.y = hitbox.y + hitbox.h;
+                                    // self.velocity.y = 0f32;
+                                    // self.falling_accel = 0f32;
                                 }
                             }
-                            false => {}
                         }
+                        false => {}
                     }
-                },
-                None => {},
-            };
+                }
+            }
+            None => {}
+        };
     }
 
     fn animate(&mut self) {
